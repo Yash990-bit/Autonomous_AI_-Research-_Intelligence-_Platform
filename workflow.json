@@ -1,0 +1,378 @@
+{
+  "meta": {
+    "instanceId": "default",
+    "templateCredsSetupCompleted": true
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1e16f3d1-4a1d-4009-bb43-41bbd90ee2b5",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "topic",
+              "stringValue": "AI Agent Trends 2026"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "18f9c159-2b0e-4366-b3f0-466d6d45e54d",
+      "name": "Set Research Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "defineBelow",
+        "text": "=You are a professional Research Agent. Your task is to perform in-depth, structured research on the following topic: {{ $json.topic }}. Use the Tavily Search tool to retrieve the latest information, articles, stats, and developments. Provide a comprehensive summary of your findings.",
+        "options": {}
+      },
+      "id": "cf646e7f-4406-4bdf-87db-2ebc4d1b714b",
+      "name": "Research Agent",
+      "type": "n8n-nodes-base.advancedAgent",
+      "typeVersion": 1,
+      "position": [
+        550,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "e963625f-2c3f-42e8-8a8b-3e5e2e5e1e1a",
+      "name": "Groq Model (Research)",
+      "type": "n8n-nodes-base.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        500,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a987d6e8-23bb-4d43-98cc-4d444ee987aa",
+      "name": "Tavily Search",
+      "type": "n8n-nodes-base.toolTavily",
+      "typeVersion": 1,
+      "position": [
+        650,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "defineBelow",
+        "text": "=You are a professional Fact Checker Agent. Verify all claims, statistics, references, and facts presented in the research: {{ $json.output }}. Identify any inaccuracies or unsupported claims. Correct the statements and provide a reliable, validated version of the research.",
+        "options": {}
+      },
+      "id": "df656a8e-2cf3-400d-9b5a-ea2a3e5e5f3c",
+      "name": "Fact Checker Agent",
+      "type": "n8n-nodes-base.advancedAgent",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "b963e6ef-a3de-4ce8-898e-4a4e4e2a2a2a",
+      "name": "Groq Model (Fact Checker)",
+      "type": "n8n-nodes-base.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        850,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "defineBelow",
+        "text": "=You are the Lead Research Reviewer. Review the verified findings: {{ $json.output }}. Structure it into a premium research report containing:\n- Executive Summary (with research metadata)\n- Key Technological Advancements\n- Market Impact & Predictions\nEnsure the language is clear, formal, and polished.",
+        "options": {}
+      },
+      "id": "e6547e8e-4ca6-4dbe-bb5a-4eb8e3e4a3aa",
+      "name": "Research Reviewer Agent",
+      "type": "n8n-nodes-base.advancedAgent",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "d986e6df-c3de-4328-98de-4e5e4f2a2d2a",
+      "name": "Groq Model (Reviewer)",
+      "type": "n8n-nodes-base.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "collection": "ai_research_reports",
+        "documentId": "={{ $('Set Research Topic').item.json.topic.toLowerCase().replace(/\\s+/g, '_') }}",
+        "text": "={{ $json.output }}",
+        "metadata": {
+          "metadataValues": [
+            {
+              "name": "topic",
+              "value": "={{ $('Set Research Topic').item.json.topic }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toString() }}"
+            }
+          ]
+        }
+      },
+      "id": "f5647e8e-4a6f-4009-bb43-41bbd90e2b5e",
+      "name": "Qdrant Vector Store",
+      "type": "n8n-nodes-base.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        1350,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c987d6e8-23bb-4d43-98cc-4d444ee987bb",
+      "name": "Google Gemini Embeddings",
+      "type": "n8n-nodes-base.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1350,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "title": "=Research Report - {{ $('Set Research Topic').item.json.topic }}",
+        "body": "={{ $('Research Reviewer Agent').item.json.output }}"
+      },
+      "id": "a189c159-2b0e-4366-b3f0-466d6d45e54a",
+      "name": "Create Google Doc",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": "={{ $json.documentId }}",
+        "permissions": [
+          {
+            "role": "reader",
+            "type": "anyone"
+          }
+        ]
+      },
+      "id": "b189c159-2b0e-4366-b3f0-466d6d45e54b",
+      "name": "Share Google Doc",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "yashraghubanshi@example.com",
+        "subject": "=New Research Report: {{ $('Set Research Topic').item.json.topic }}",
+        "emailType": "text",
+        "body": "=Hello,\n\nYour Autonomous AI Research Platform has successfully generated a new research document.\n\nReport Topic: {{ $('Set Research Topic').item.json.topic }}\nReport Link: {{ $('Share Google Doc').item.json.webViewLink }}\n\nBest Regards,\nAutonomous AI Research Platform"
+      },
+      "id": "c189c159-2b0e-4366-b3f0-466d6d45e54c",
+      "name": "Send Gmail Notification",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Research Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Research Topic": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model (Research)": {
+      "ai_language_model": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_language_model",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Fact Checker Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model (Fact Checker)": {
+      "ai_language_model": [
+        [
+          {
+            "node": "Fact Checker Agent",
+            "type": "ai_language_model",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fact Checker Agent": {
+      "main": [
+        [
+          {
+            "node": "Research Reviewer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model (Reviewer)": {
+      "ai_language_model": [
+        [
+          {
+            "node": "Research Reviewer Agent",
+            "type": "ai_language_model",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Reviewer Agent": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Create Google Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Google Doc": {
+      "main": [
+        [
+          {
+            "node": "Share Google Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Google Doc": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

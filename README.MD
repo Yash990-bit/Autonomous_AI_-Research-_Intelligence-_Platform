@@ -265,10 +265,7 @@ The platform automatically:
 
 ### Visual Outputs
 
-#### 1. Generated Research Report
-![Generated Research Report](screenshot/report.png)
-
-#### 2. Email Notification Delivery
+#### 1. Email Notification Delivery
 ![Email Notification](screenshot/email.png)
 
 ---
