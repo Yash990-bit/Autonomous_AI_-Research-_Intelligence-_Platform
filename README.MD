@@ -65,25 +65,15 @@ This platform automates the complete research workflow.
 
 ---
 
-## Workflow Architecture
 
-Topic Input
-↓
-Research Agent
-↓
-Fact Checker Agent
-↓
-Research Reviewer Agent
-↓
-Qdrant Vector Database
-↓
-RAG Search Agent
-↓
-Google Docs Report Generator
-↓
-Google Drive Share File
-↓
-Gmail Notification
+
+### n8n Workflow Process Image
+
+![n8n Workflow](screenshot/workflow.png)
+
+### Data Flow Process
+
+Topic Input $\rightarrow$ Research Agent $\rightarrow$ Fact Checker Agent $\rightarrow$ Research Reviewer Agent $\rightarrow$ Qdrant Vector Database $\rightarrow$ RAG Search Agent $\rightarrow$ Google Docs Report Generator $\rightarrow$ Google Drive Share File $\rightarrow$ Gmail Notification
 
 ---
 
@@ -272,6 +262,14 @@ The platform automatically:
 ✔ Sends email notifications
 
 ✔ Supports scheduled automation
+
+### Visual Outputs
+
+#### 1. Generated Research Report
+![Generated Research Report](screenshot/report.png)
+
+#### 2. Email Notification Delivery
+![Email Notification](screenshot/email.png)
 
 ---
 
